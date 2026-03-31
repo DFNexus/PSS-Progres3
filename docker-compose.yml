@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: simple-lms-db
+    environment:
+      POSTGRES_DB: lms_db
+      POSTGRES_USER: user_lms
+      POSTGRES_PASSWORD: password_lms
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: simple-lms-web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=lms_db
+      - DB_USER=user_lms
+      - DB_PASSWORD=password_lms
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
