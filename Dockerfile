@@ -1,5 +1,5 @@
 #pakek python slim biar enteng 
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 #set avr env bair python ngga buat file .pyc dan output lngsg ke terminal biar tampilannya bersih 
 ENV PYTHONDONTWRITEBYTECODE=1
