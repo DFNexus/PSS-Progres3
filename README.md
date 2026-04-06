@@ -1,47 +1,59 @@
-# Simple LMS - Django & PostgreSQL Containerization
+Danendra Farrel Haryo Wibowo 
+A11.2023.15025
+Pemrograman Sisi Server : A11.4618
 
-Proyek ini adalah tugas implementasi sistem manajemen pembelajaran sederhana (Simple LMS) menggunakan framework **Django** dan database **PostgreSQL** yang dijalankan sepenuhnya di dalam environment **Docker**.
+# Simple LMS - Database Schema & ORM Optimization
+**Progres 2: Implementasi Skema Relasional dan Manajemen Query**
 
-## Penjelasan env
-Proyek ini menggunakan variabel lingkungan untuk menjaga keamanan kredensial. Pastikan Anda telah membuat file .env berdasarkan daftar berikut:
+Proyek ini merupakan implementasi *backend* untuk sistem manajemen pembelajaran (LMS) menggunakan Django. Fokus utama dari pengerjaan ini adalah perancangan skema database yang mendukung hierarki data kompleks serta optimasi pengambilan data untuk performa aplikasi yang lebih baik.
 
-    DEBUG: Mengaktifkan mode pengecekan error dan fitur pengembangan (Contoh: True).
+## Fitur Utama
 
-    SECRET_KEY: Kunci kriptografi unik yang digunakan Django untuk menjaga keamanan data (Contoh: django-insecure-xxx).
+Aplikasi ini mencakup beberapa logika yang diatur melalui Django Models:
+* **Hierarki Kategori:** Implementasi *Self referencing Foreign Key* yang memungkinkan kategori memiliki induk dan anak (hirarki).
+* **Manajemen Peran Pengguna:** Sistem autentikasi yang membedakan antara Admin, Instruktur, dan Siswa.
+* **Optimasi Pengurutan:** Pengaturan urutan materi secara otomatis berdasarkan kolom *order*.
+* **Integritas Data:** Penggunaan *Unique Constraints* pada tabel pendaftaran untuk mencegah duplikasi data.
+* **Pelacakan Progres:** Pencatatan status penyelesaian materi bagi setiap siswa.
 
-    DB_NAME: Nama database yang akan digunakan di dalam PostgreSQL (Contoh: lms_db).
 
-    DB_USER: Username yang diberikan hak akses untuk mengelola database (Contoh: lms_user).
+## Analisis Optimasi Query (Fakta Teknis)
+Salah satu aspek krusial dalam tugas ini adalah penyelesaian masalah **N+1 Query**. Pengambilan data relasional dilakukan menggunakan teknik *Eager Loading* untuk meminimalisir beban pada database.
 
-    DB_PASSWORD: Kata sandi rahasia untuk otentikasi database (Contoh: lms_password).
+### Perbandingan Kinerja
+Berdasarkan pengujian menggunakan script `demo_optimization.py`, berikut adalah perbandingan jumlah *query* yang dikirimkan ke database:
 
-    DB_HOST: Alamat host database, diisi dengan nama service database pada docker-compose (Contoh: db).
+### Dokumentasi Eksekusi
+<img width="848" height="326" alt="Screenshot_20260406_152136" src="https://github.com/user-attachments/assets/757c0e1a-36b4-402f-816d-5556123692a7" />
 
-    DB_PORT: Port internal yang digunakan untuk komunikasi layanan PostgreSQL (Contoh: 5432).
+## Konfigurasi Admin Interface
+Panel Admin Django telah dikonfigurasi untuk meningkatkan efisiensi pengelolaan data:
+* **Inline Editing:** Instruktur dapat menambah atau mengedit materi (Lesson) langsung di halaman Kursus.
+* **Filtering & Search:** Memudahkan pencarian data kursus berdasarkan judul, kategori, atau instruktur.
+* **Informatif:** Menampilkan kolom-kolom penting secara langsung pada daftar tabel.
+<img width="1920" height="825" alt="Screenshot_20260406_152207" src="https://github.com/user-attachments/assets/5cd5d707-f0a9-4331-b239-6c27a367e519" />
 
-## Cara Menjalankan Project
-Ikuti urutan perintah berikut di terminal Linux Anda untuk menjalankan infrastruktur secara utuh:
+* note : ini adalah tampilan admin di akun saya, sudah ada beberapa data yang sudah saya tambahkan, tetapi pada saat anda coba membuat akun dan mendapati tidak ada apa apa jangan panik, itu normal karna akun anda baru, dan belum ditambahkan apa apa"
 
-### 1. Inisialisasi Environment
-Salin template variabel lingkungan agar aplikasi dapat membaca konfigurasi database, ketikkan perntah berikut pada terminal di folder anda:
-"cp .env.example .env"
+## Instalasi dan Setup
 
-### 2. Membangun Infrastruktur Docker
-Jalankan Docker Compose untuk membangun image dan menyalakan container web (Django) serta db (PostgreSQL) di latar belakang:
-"sudo docker compose up -d --build"
+### 1. Persiapan Dependensi
+Pastikan Anda berada di dalam *virtual environment*, lalu jalankan:
+"pip install -r requirements.txt"
 
-### 3. Migrasi Database
-Sinkronkan skema database Django ke dalam PostgreSQL yang berjalan di container:
-"sudo docker compose run --rm web python manage.py migrate"
+### 2. Migrasi dan Inisialisasi Data
+Proyek ini menyediakan fixtures untuk memudahkan evaluasi. Jalankan perintah berikut untuk membuat database dan mengisi data awal secara otomatis:
+"python3 manage.py migrate"
+"python3 manage.py loaddata lms/fixtures/initial_data.json"
 
-### 4. Akses Aplikasi
-Buka browser dan arahkan ke alamat berikut:
+### 3. Menjalankan Demo Optimasi
+Untuk memverifikasi efisiensi penggunaan Django ORM secara langsung, jalankan script berikut:
+"python3 demo_optimization.py"
 
-    Django App: http://localhost:8000
+## atau agar lebih mudah bisa menggunakan docker saja 
+setelah melakukan clone, jalankan saja "docker compose up -d", pastikan di system kalian sudah terinstall docker, dan jalankan di dir yang ada dockerfile dan docker composenya
 
-    Django Admin: http://localhost:8000/admin
-
-### 5. Screenshot Django welcome page
-Berikut adalah tampiland ari Django Welcome page jika sudah berhasil:
-<img width="1919" height="1035" alt="Screenshot_20260331_153510" src="https://github.com/user-attachments/assets/6a887dec-e262-4608-aafc-9d331a41e135" />
+## Akses Admin Panel
+Untuk mengakses dashboard admin di `http://localhost:8000/admin`, Anda dapat membuat akun superuser baru melalui kontainer Docker dengan perintah berikut:
+"docker compose exec web python manage.py createsuperuser"
 
