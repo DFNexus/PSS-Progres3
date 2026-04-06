@@ -15,6 +15,11 @@ Aplikasi ini mencakup beberapa logika yang diatur melalui Django Models:
 * **Optimasi Pengurutan:** Pengaturan urutan materi secara otomatis berdasarkan kolom *order*.
 * **Integritas Data:** Penggunaan *Unique Constraints* pada tabel pendaftaran untuk mencegah duplikasi data.
 * **Pelacakan Progres:** Pencatatan status penyelesaian materi bagi setiap siswa.
+  
+* Model Managers & Custom QuerySet
+Untuk memastikan efisiensi di seluruh aplikasi, saya telah mengimplementasikan Custom Managers:
+* **Course.objects.for_listing()**: Secara otomatis menerapkan `select_related('category', 'instructor')`. Ini memastikan data relasional diambil dalam satu query (digunakan pada script demo).
+* **Enrollment.objects.for_student_dashboard()**: Custom QuerySet yang sudah dioptimasi untuk menampilkan progres belajar siswa tanpa memicu N+1 query pada data Lesson.
 
 
 ## Analisis Optimasi Query (Fakta Teknis)
