@@ -9,25 +9,25 @@ NIM: A11.2023.15025
 
 Cara Menjalankan Project
 1. Clone & Build
-Bash
 
-git clone https://github.com/DanendraFarrel/simple-lms.git
-cd simple-lms
-docker compose up --build
+
+        git clone https://github.com/DanendraFarrel/simple-lms.git
+        cd simple-lms
+        docker compose up --build
 
 2. Database & Superuser
 
 Buka terminal baru untuk melakukan migrasi dan membuat akun admin utama:
-Bash
 
-docker compose exec web python manage.py migrate
-docker compose exec web python manage.py createsuperuser
+
+    docker compose exec web python manage.py migrate
+    docker compose exec web python manage.py createsuperuser
 
 3. Akses Dokumentasi & API
 
-    Swagger UI (Docs): http://localhost:8000/api/docs
+        Swagger UI (Docs): http://localhost:8000/api/docs
 
-    Django Admin: http://localhost:8000/admin
+        Django Admin: http://localhost:8000/admin
 
 **Tugas 3: REST API, Security, & Schema Validation :**
 
