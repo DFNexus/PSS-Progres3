@@ -11,7 +11,7 @@ import jwt
 api = NinjaAPI(
     title="Simple LMS API",
     description="API Documentation for Django Ninja LMS",
-    version="1.0.0"
+    version="1.6.2"
 )
 
 auth_router = Router(tags=["Authentication"])
@@ -62,7 +62,8 @@ def refresh_token(request, payload: RefreshSchema):
 
 @auth_router.get("/me", auth=JWTAuth(), response=UserProfileSchema)
 def get_me(request):
-    return request.user
+  
+    return request.auth
 
 @auth_router.put("/me", auth=JWTAuth(), response=UserProfileSchema)
 def update_profile(request, payload: UserUpdateSchema):
