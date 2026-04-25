@@ -1,64 +1,122 @@
-Danendra Farrel Haryo Wibowo 
-A11.2023.15025
-Pemrograman Sisi Server : A11.4618
+**Simple LMS — REST API & Security System :**
 
-# Simple LMS - Database Schema & ORM Optimization
-**Progres 2: Implementasi Skema Relasional dan Manajemen Query**
-
-Proyek ini merupakan implementasi *backend* untuk sistem manajemen pembelajaran (LMS) menggunakan Django. Fokus utama dari pengerjaan ini adalah perancangan skema database yang mendukung hierarki data kompleks serta optimasi pengambilan data untuk performa aplikasi yang lebih baik.
-
-## Fitur Utama
-
-Aplikasi ini mencakup beberapa logika yang diatur melalui Django Models:
-* **Hierarki Kategori:** Implementasi *Self referencing Foreign Key* yang memungkinkan kategori memiliki induk dan anak (hirarki).
-* **Manajemen Peran Pengguna:** Sistem autentikasi yang membedakan antara Admin, Instruktur, dan Siswa.
-* **Optimasi Pengurutan:** Pengaturan urutan materi secara otomatis berdasarkan kolom *order*.
-* **Integritas Data:** Penggunaan *Unique Constraints* pada tabel pendaftaran untuk mencegah duplikasi data.
-* **Pelacakan Progres:** Pencatatan status penyelesaian materi bagi setiap siswa.
-  
-* Model Managers & Custom QuerySet
-Untuk memastikan efisiensi di seluruh aplikasi, saya telah mengimplementasikan Custom Managers:
-* **Course.objects.for_listing()**: Secara otomatis menerapkan `select_related('category', 'instructor')`. Ini memastikan data relasional diambil dalam satu query (digunakan pada script demo).
-* **Enrollment.objects.for_student_dashboard()**: Custom QuerySet yang sudah dioptimasi untuk menampilkan progres belajar siswa tanpa memicu N+1 query pada data Lesson.
+**Author :**
+Nama: Danendra Farrel Haryo Wibowo
+NIM: A11.2023.15025
 
 
-## Analisis Optimasi Query (Fakta Teknis)
-Salah satu aspek krusial dalam tugas ini adalah penyelesaian masalah **N+1 Query**. Pengambilan data relasional dilakukan menggunakan teknik *Eager Loading* untuk meminimalisir beban pada database.
+**Project Django dengan Docker untuk Tugas 3: Authentication, Authorization, & Rest API**
 
-### Perbandingan Kinerja
-Berdasarkan pengujian menggunakan script `demo_optimization.py`, berikut adalah perbandingan jumlah *query* yang dikirimkan ke database:
+Cara Menjalankan Project
+1. Clone & Build
+Bash
 
-### Dokumentasi Eksekusi
-<img width="848" height="326" alt="Screenshot_20260406_152136" src="https://github.com/user-attachments/assets/757c0e1a-36b4-402f-816d-5556123692a7" />
+git clone https://github.com/DanendraFarrel/simple-lms.git
+cd simple-lms
+docker compose up --build
 
-## Konfigurasi Admin Interface
-Panel Admin Django telah dikonfigurasi untuk meningkatkan efisiensi pengelolaan data:
-* **Inline Editing:** Instruktur dapat menambah atau mengedit materi (Lesson) langsung di halaman Kursus.
-* **Filtering & Search:** Memudahkan pencarian data kursus berdasarkan judul, kategori, atau instruktur.
-* **Informatif:** Menampilkan kolom-kolom penting secara langsung pada daftar tabel.
-<img width="1920" height="825" alt="Screenshot_20260406_152207" src="https://github.com/user-attachments/assets/5cd5d707-f0a9-4331-b239-6c27a367e519" />
+2. Database & Superuser
 
-* note : ini adalah tampilan admin di akun saya, sudah ada beberapa data yang sudah saya tambahkan, tetapi pada saat anda coba membuat akun dan mendapati tidak ada apa apa jangan panik, itu normal karna akun anda baru, dan belum ditambahkan apa apa"
+Buka terminal baru untuk melakukan migrasi dan membuat akun admin utama:
+Bash
 
-## Instalasi dan Setup
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
 
-### 1. Persiapan Dependensi
-Pastikan Anda berada di dalam *virtual environment*, lalu jalankan:
-"pip install -r requirements.txt"
+3. Akses Dokumentasi & API
 
-### 2. Migrasi dan Inisialisasi Data
-Proyek ini menyediakan fixtures untuk memudahkan evaluasi. Jalankan perintah berikut untuk membuat database dan mengisi data awal secara otomatis:
-"python3 manage.py migrate"
-"python3 manage.py loaddata lms/fixtures/initial_data.json"
+    Swagger UI (Docs): http://localhost:8000/api/docs
 
-### 3. Menjalankan Demo Optimasi
-Untuk memverifikasi efisiensi penggunaan Django ORM secara langsung, jalankan script berikut:
-"python3 demo_optimization.py"
+    Django Admin: http://localhost:8000/admin
 
-## atau agar lebih mudah bisa menggunakan docker saja 
-setelah melakukan clone, jalankan saja "docker compose up -d", pastikan di system kalian sudah terinstall docker, dan jalankan di dir yang ada dockerfile dan docker composenya
+**Tugas 3: REST API, Security, & Schema Validation :**
 
-## Akses Admin Panel
-Untuk mengakses dashboard admin di `http://localhost:8000/admin`, Anda dapat membuat akun superuser baru melalui kontainer Docker dengan perintah berikut:
-"docker compose exec web python manage.py createsuperuser"
+1. Authentication System (JWT)
+
+Implementasi menggunakan PyJWT dengan sistem Stateless Authentication.
+
+    Access Token: Digunakan untuk otorisasi setiap request (Header: Authorization: Bearer <token>).
+
+    Refresh Token: Digunakan untuk mendapatkan access token baru tanpa login ulang.
+
+    Hashing: Password disimpan menggunakan algoritma bcrypt (Secure Hashing).
+
+2. Authorization & RBAC (Role-Based Access Control)
+
+Pembatasan akses menggunakan custom decorators pada api.py.
+Role	Izin Akses (Permissions)
+Admin	Full Access, Delete Courses, Manage Users.
+Instructor	Create Course, Update Course (hanya miliknya), View List.
+Student	Enroll to Course, Update Learning Progress, View My Courses.
+
+Ownership Validation: Pada fungsi update_course, sistem melakukan pengecekan course.instructor_id == request.user.id untuk mencegah instruktur lain mengubah data yang bukan miliknya.
+3. Schema Synchronization & Validation
+
+Menggunakan Pydantic (Django Ninja) untuk memastikan data input/output sinkron dengan database.
+Schema	Field Terintegrasi	Penyesuaian Teknis
+UserOut	id, username, email, role	Sinkron dengan Custom User Model.
+CourseIn	title, category_id	Menghapus description (tidak ada di Model).
+CourseOut	id, title, instructor_id	Menangani relasi Foreign Key secara eksplisit.
+
+API Endpoints Mapping
+Auth & Profile
+
+    POST /api/auth/register — Pendaftaran user baru (Hash password via bcrypt).
+
+    POST /api/auth/login — Pertukaran kredensial dengan JWT Token.
+
+    GET /api/auth/me — Mengambil data profil user yang sedang aktif.
+
+Course Management
+
+    GET /api/courses — Menampilkan daftar kelas (Optimasi: select_related).
+
+    POST /api/courses — [Instructor Only] Menambah kelas baru.
+
+    DELETE /api/courses/{id} — [Admin Only] Menghapus kelas dari sistem.
+
+Enrollment & Progress
+
+    POST /api/enrollments — [Student Only] Mendaftar ke kursus.
+
+    GET /api/enrollments/my-courses — Melihat daftar kursus yang diambil.
+
+    POST /api/enrollments/{id}/progress — Menandai materi selesai (is_completed).
+
+Bukti Fisik Pengujian 
+1. Dokumentasi Swagger UI
+
+Screenshot tampilan /api/docs yang memuat folder Auth, Courses, dan Enrollments.
+
+    File: screenshots/01_swagger_docs.png
+
+2. Pengujian JWT (Login & Profile)
+
+Menampilkan hasil POST /login (mendapat token) dan GET /me (data user muncul).
+
+    File: screenshots/02_jwt_auth_me.png
+
+3. Implementasi RBAC (Role Instructor)
+
+Menunjukkan user dengan role instructor berhasil melakukan POST kelas baru.
+
+    File: screenshots/03_rbac_instructor_post.png
+
+4. Pencegahan Error 500 (Schema Match)
+
+Bukti bahwa input data sudah tervalidasi dan tidak terjadi IntegrityError atau Unexpected Keyword.
+
+    File: screenshots/04_schema_validation_success.png
+
+Docker Services
+Service	Image	Port	Keterangan
+web	Python 3.12-slim	8000	Django Application (Debian Based)
+db	PostgreSQL 15	5432	Relational Database
+Catatan Penting
+
+    UUID Fix: Proyek ini menggunakan django-ninja>=1.6.2 untuk menghindari konflik registrasi UUID pada Django 6.
+
+    Port: Menggunakan port default 8000. Pastikan tidak ada service lain yang berjalan di port tersebut.
+
+    Data Integrity: Selalu pastikan category_id yang dimasukkan saat POST Course sudah ada di Django Admin.
 
